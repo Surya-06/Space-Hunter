@@ -20,3 +20,5 @@ io.on('connection' , (socket)=>{
 })
 
 http.listen( PORT, ()=> {console.log("Server up at : " , PORT );});
+
+console.log ( ' LOG : Server initialized ')
