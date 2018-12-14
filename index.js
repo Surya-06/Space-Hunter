@@ -15,7 +15,7 @@ io.on('connection' , (socket)=>{
     console.log ( "Client connected " , socket.id );
     socket.on ( 'message' , (msg)=>{
         console.log ( "CLIENT : " , msg );
-        socket.emit ( 'message' , 'MESSAGE RECEIVED - ID : ' , socket.id );
+        socket.emit ( 'message' , 'MESSAGE RECEIVED - ID : ' + socket.id );
     });
 })
 
