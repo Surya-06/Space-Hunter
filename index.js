@@ -21,11 +21,30 @@ function start_comms ( socket_a  , socket_b ){
 
     socket_a.on ( 'data' , (msg)=>{
         // forward data to other client
+        console.log ( "MSG CLIENT_A : " + msg );
         socket_b.emit('data' , msg );
     });
     socket_b.on ( 'data' , (msg)=>{
         // forward data to other client 
+        console.log ( "MSG CLIENT_B: " + msg );
         socket_a.emit('data' , msg );
+    });
+
+    socket_a.on ( 'disconnect' , (res)=>{
+        console.log ( "DISCONNECT : CLIENT_A DISCONNECTED ");
+        socket_b.emit('message' , 'Opponent left , please reload the page :-)');
+        socket_b.disconnect();
+        client_obj.delete ( socket_a.id );
+        client_obj.delete ( socket_b.id );
+        console.log ( 'CLIENT SOCKETS DELETED');
+    });
+    socket_b.on ( 'disconnect' , (res)=>{
+        console.log ( "DISCONNECT : CLIENT_B DISCONNECTED ");
+        socket_a.emit('message' , 'Opponent left , please reload the page :-)');
+        socket_a.disconnect();
+        client_obj.delete( socket_a.id );
+        client_obj.delete( socket_b.id );
+        console.log ( 'CLIENT SOCKETS DELETED');
     });
 
 }
