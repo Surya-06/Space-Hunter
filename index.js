@@ -15,9 +15,18 @@ app.get ( '/' , (req,res)=>{
 });
 
 function start_comms ( socket_a  , socket_b ){
-    socket_a.emit ( 'data' , 'Connection established with : '+socket_b.id );
+    socket_a.emit ( 'opp_id' , 'Connection established with : '+socket_b.id );
     socket_b.emit ( 'message' , 'Your ID : ' + socket_b.id );
-    socket_b.emit ( 'data' , 'Connection established with : '+socket_a.id );
+    socket_b.emit ( 'opp_id' , 'Connection established with : '+socket_a.id );
+
+    socket_a.on ( 'data' , (msg)=>{
+        // forward data to other client
+        socket_b.emit('data' , msg );
+    });
+    socket_b.on ( 'data' , (msg)=>{
+        // forward data to other client 
+        socket_a.emit('data' , msg );
+    });
 
 }
 
