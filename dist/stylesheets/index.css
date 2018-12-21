@@ -1,0 +1,10 @@
+body{
+    background: url('./background.png');
+    background-size : 800px 700px ;
+    background-repeat: repeat;
+}
+
+canvas{
+    display: inline;
+    border : 5px solid red;
+}
