@@ -5,6 +5,8 @@ import opp_model from './assets/opponent_ship.png';
 const move_px = 20 ;
 const x_max = 800 ;
 const y_max = 600;
+const radius = 10;
+const empty_function = () => void 0;
 
 var player = {
     x : 350 ,
@@ -20,6 +22,29 @@ var opp = {
     width : 100 ,
     height : 100 ,
     model : opp_model
+}
+
+function clearBullet ( context , x , y ){
+    context.globalCompositeOperation = 'destination-out';
+    context.arc ( x , y , radius , Math.PI *2 , true );
+    context.fill();
+}
+
+function placeBullet ( context , x , y , color = 'red' ){
+    context.beginPath();
+    context.arc ( x , y , radius , 0 , Math.PI * 2  , true );
+    context.fillStyle = color ;
+    context.closePath();
+    context.fill();
+}
+
+function updateBullets ( context , bullets ){
+    for ( bullet in bullets ){
+        clearBullet ( context , bullet.x , bullet.y );
+        if ( bullet.y >=50 )    bullet.y -= 50;
+        else bullets.remove(bullet);
+        placeBullet ( context , bullet.x , bullet.y );
+    }
 }
 
 function drawModel ( context , value ){
@@ -40,21 +65,24 @@ function inputListen(context){
                 player.x -= move_px;
             drawModel ( context , player );
         }
-        else if ( event.keyCode == 39 ){
+        if ( event.keyCode == 39 ){
             // right arrow
             context.clearRect ( player.x , player.y , player.width , player.height );
             if ( x_max - player.x >= player.width )
                 player.x += move_px;
             drawModel ( context , player );
         }
-        else if ( event.keyCode == 38 ){
+        if ( event.keyCode == 38 ){
             // up arrow
+            console.log ( "up arrow selected" );
         }
-        else if ( event.keyCode == 40 ){
+        if ( event.keyCode == 40 ){
             // down
+            console.log ( "down arrow selected" );
         }
-        else if ( event.keyCode == 32 ){
+        if ( event.keyCode == 32 ){
             // space key 
+            placeBullet ( context , player.x , player.y-50 );
         }
     })
 }

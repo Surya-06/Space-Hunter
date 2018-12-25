@@ -13,7 +13,8 @@
     "file-loader": "^3.0.1",
     "style-loader": "^0.23.1",
     "webpack": "^4.28.1",
-    "webpack-cli": "^3.1.2"
+    "webpack-cli": "^3.1.2",
+    "webworker-loader": "^0.1.0"
   },
   "dependencies": {
     "fabric": "^2.4.5"
