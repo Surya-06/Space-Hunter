@@ -1,76 +1,42 @@
-import {fabric} from 'fabric';
-import player_model from './assets/player_ship.png';
-import opp_model from './assets/opponent_ship.png';
+// TODO : delete fabric from modules 
 
-const move_px = 20 ;
-const x_max = 800 ;
-const y_max = 600;
-const radius = 10;
-const empty_function = () => void 0;
+import playerImage from './assets/player_ship.png';
+import opponentImage from './assets/opponent_ship.png';
 
-var player = {
-    x : 350 ,
-    y : 500 , 
-    width : 100 ,
-    height : 100 ,
-    model : player_model 
+
+const RADIUS = 10 ;
+const BULLET_SPEED = 1 ;
+const PLAYER_BULLET_COLOR = 'blue';
+const OPP_BULLET_COLOR = 'red';
+const PLAYER_MOVEMENT = 20 ;
+const X_MAX = 800 ;
+
+var MODELS = require ( './Models' );
+
+var player , opp , playerBulletList ;
+
+function PlayerBulletConditional ( current_value ) {
+    return current_value > 50 ;
 }
 
-var opp = {
-    x : 350 ,
-    y : 0 ,
-    width : 100 ,
-    height : 100 ,
-    model : opp_model
-}
-
-function clearBullet ( context , x , y ){
-    context.globalCompositeOperation = 'destination-out';
-    context.arc ( x , y , radius , Math.PI *2 , true );
-    context.fill();
-}
-
-function placeBullet ( context , x , y , color = 'red' ){
-    context.beginPath();
-    context.arc ( x , y , radius , 0 , Math.PI * 2  , true );
-    context.fillStyle = color ;
-    context.closePath();
-    context.fill();
-}
-
-function updateBullets ( context , bullets ){
-    for ( bullet in bullets ){
-        clearBullet ( context , bullet.x , bullet.y );
-        if ( bullet.y >=50 )    bullet.y -= 50;
-        else bullets.remove(bullet);
-        placeBullet ( context , bullet.x , bullet.y );
-    }
-}
-
-function drawModel ( context , value ){
-    var img_tag = new Image();
-    img_tag.onload = () => {
-        context.drawImage ( img_tag , value.x , value.y , value.width , value.height );
-    }
-    img_tag.src = value.model;
-}
-
-function inputListen(context){
+function ActivateInputListeners () {
     document.addEventListener ( 'keydown' , (event) => {
         event.preventDefault();
         if ( event.keyCode == 37 ){
-            // left arrow 
-            context.clearRect ( player.x , player.y , player.width , player.height );
-            if ( player.x >= move_px )
-                player.x -= move_px;
-            drawModel ( context , player );
+            // left arrow
+            console.log ( "Moving left" );
+            player.erase(); 
+            if ( player.x > PLAYER_MOVEMENT )
+                player.x -= PLAYER_MOVEMENT;
+            player.draw();
         }
         if ( event.keyCode == 39 ){
             // right arrow
-            context.clearRect ( player.x , player.y , player.width , player.height );
-            if ( x_max - player.x >= player.width )
-                player.x += move_px;
-            drawModel ( context , player );
+            console.log ( "Moving right" );
+            player.erase();
+            if ( X_MAX - player.x >= player.width )
+                player.x += PLAYER_MOVEMENT;
+            player.draw();            
         }
         if ( event.keyCode == 38 ){
             // up arrow
@@ -81,20 +47,37 @@ function inputListen(context){
             console.log ( "down arrow selected" );
         }
         if ( event.keyCode == 32 ){
-            // space key 
-            placeBullet ( context , player.x , player.y-50 );
+            // space key
+            console.log ( "Adding bullet to list" );
+            playerBulletList.add ( player.x+50, player.y-BULLET_SPEED-50 );
         }
-    })
+    });
 }
+
+function BulletLoop () {
+    playerBulletList.update();
+    requestAnimationFrame(BulletLoop);
+} 
 
 function init () {
+    console.log ( "Getting reference to canvas frame." );
     var canvas = document.getElementById('game_frame');
     var context = canvas.getContext("2d");
-    drawModel ( context , player );
-    drawModel ( context , opp );
-    
-    // start listening for player movements 
-    inputListen(context);
+    console.log ( "Creating objects for player and opponent.");
+    player = new MODELS.PlayerModel(context,350,500,100,100,playerImage);
+    opp = new MODELS.PlayerModel(context,350,0,100,100,opponentImage);
+    console.log ( "Drawing player and opponent to canvas.");
+    player.draw();
+    opp.draw();
+    console.log ( "Creating bullet list." );
+    playerBulletList = new MODELS.BulletList(context,PLAYER_BULLET_COLOR,RADIUS,BULLET_SPEED,PlayerBulletConditional);
+    console.log ( "Initialization of resources complete" );
+    console.log ( "Activating listeners for input." );
+    ActivateInputListeners(); 
+    console.log ( "Starting bullet looping function" );
+    requestAnimationFrame ( BulletLoop );  
 }
 
+console.log ( "----------------WELCOME-----------");
+console.log ( "Initializing the game." );
 init();
