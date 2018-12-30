@@ -5,6 +5,7 @@ import opp_img from './assets/opponent_ship.png';
 import bullet_img from './assets/bullet.png';
 
 var WIDTH , HEIGHT ; 
+
 const MOVEMENT_PIX = 30;
 const RIGHT_ARROW = 39;
 const LEFT_ARROW = 37;
@@ -71,9 +72,17 @@ function main () {
     requestAnimationFrame ( main );
 }
 
+function AdjustCanvas(canvas){
+    canvas.style.width='100%';
+    canvas.style.height='100%';
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+}
+
 function init() {
     console.log ( "Starting game " );
     canvas = document.getElementById( 'game_frame' );
+    AdjustCanvas(canvas);
     context = canvas.getContext('2d');
     WIDTH = context.canvas.width ;
     HEIGHT  = context.canvas.height ;
