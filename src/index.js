@@ -5,14 +5,12 @@ import opp_img from './assets/opponent_ship.png';
 import bullet_img from './assets/bullet.png';
 
 var WIDTH , HEIGHT ; 
+const MIN_WIDTH = 0 , MIN_HEIGHT = 0;
+const MODEL_DIMENSIONS = 100 ;
 
 const MOVEMENT_PIX = 30;
-const RIGHT_ARROW = 39;
-const LEFT_ARROW = 37;
-const SPACE = 32;
-const BULLET_SPEED = 5;
-const BULLET_WIDTH = 10;
-const BULLET_HEIGHT = 30;
+const RIGHT_ARROW = 39, LEFT_ARROW = 37, SPACE = 32;
+const BULLET_SPEED = 5, BULLET_WIDTH = 10, BULLET_HEIGHT = 30;
 
 
 var canvas , context , player , opp , bulletImage ;
@@ -31,8 +29,10 @@ function ActivateInputListeners () {
         if ( event.keyCode == LEFT_ARROW ){
             // left arrow
             console.log ( "Moving left" );
-            if ( player.x > 0 )
+            if ( player.x - MOVEMENT_PIX > MIN_WIDTH )
                 player.x -= MOVEMENT_PIX ;
+            else 
+                player.x = MIN_WIDTH ;
         }
         if ( event.keyCode == RIGHT_ARROW ){
             // right arrow
@@ -95,17 +95,17 @@ function init() {
     oppImage.src = opp_img;
     bulletImage.src = bullet_img;
     player = {
-        x : 350 ,
-        y : 500 ,
-        width : 100 , 
-        height : 100 ,
+        x : WIDTH/2 ,
+        y : HEIGHT - MODEL_DIMENSIONS ,
+        width : MODEL_DIMENSIONS , 
+        height : MODEL_DIMENSIONS ,
         model : playerImage 
     };
     opp = {
-        x : 350 ,
-        y : 0 ,
-        width : 100 ,
-        height : 100 ,
+        x : WIDTH/2 ,
+        y : MIN_HEIGHT ,
+        width : MODEL_DIMENSIONS ,
+        height : MODEL_DIMENSIONS ,
         model : oppImage
     };
     // Activate input listeners 

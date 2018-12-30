@@ -20,12 +20,19 @@ body{
     height : 100%;
     width : 25%;
     float : left ;
-    background : blue ;
 }
 .game_frame{
     height: 100%;
     width : 75%;
-    float : right ;
+    float : right;
+}
+.current_stats{
+    height : 96%;
+    width : 95%;
+    border : 5px solid green;
+    padding-top : 4%;
+    background : gray;
+    opacity: 0.8;
 }
 
 canvas{
