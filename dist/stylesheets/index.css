@@ -1,10 +1,32 @@
 body{
-    /* background: url('./background.png'); */
+    background: url('./background.png');
     background-size : 800px 700px ;
     background-repeat: repeat;
+    height : 100%;
+    width : 100%;
+    overflow: hidden;
+    margin : 0;
 }
 
 canvas{
     display: inline;
     border : 5px solid red;
+}
+table {
+    table-layout: fixed;
+    height: 100%;
+    width : 100%;
+}
+tr { height: 100% ; width : 100% ;}
+td.stats {
+    border : 20px solid green;
+    padding : 5px;
+    background : grey;
+    height: 100%;
+    width : 25%;
+}
+
+td.game_frame{
+    height: 100%;
+    width: 75%;
 }

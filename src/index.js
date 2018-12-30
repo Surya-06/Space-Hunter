@@ -4,8 +4,7 @@ import player_img from './assets/player_ship.png';
 import opp_img from './assets/opponent_ship.png';
 import bullet_img from './assets/bullet.png';
 
-const WIDTH = 800;
-const HEIGHT = 600; 
+var WIDTH , HEIGHT ; 
 const MOVEMENT_PIX = 30;
 const RIGHT_ARROW = 39;
 const LEFT_ARROW = 37;
@@ -31,13 +30,13 @@ function ActivateInputListeners () {
         if ( event.keyCode == LEFT_ARROW ){
             // left arrow
             console.log ( "Moving left" );
-            if ( player.x > MOVEMENT_PIX )
+            if ( player.x > 0 )
                 player.x -= MOVEMENT_PIX ;
         }
         if ( event.keyCode == RIGHT_ARROW ){
             // right arrow
             console.log ( "Moving right" );
-            if ( player.x < WIDTH - MOVEMENT_PIX )
+            if ( player.x < WIDTH - player.width )
                 player.x += MOVEMENT_PIX ;
         }
         if ( event.keyCode == SPACE ){
@@ -76,6 +75,10 @@ function init() {
     console.log ( "Starting game " );
     canvas = document.getElementById( 'game_frame' );
     context = canvas.getContext('2d');
+    WIDTH = context.canvas.width ;
+    HEIGHT  = context.canvas.height ;
+    console.log ( "Width of canvas : " , WIDTH );
+    console.log ( "Height of canvas : " , HEIGHT );
     var playerImage = new Image();
     var oppImage = new Image();
     bulletImage = new Image();
