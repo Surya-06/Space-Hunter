@@ -11,12 +11,22 @@ var io = require('socket.io-client');
 const SERVER = 'http://localhost:8030';
 var socket ;
 
+const SOCKET_EVENTS = {
+    INIT : 'init',
+    INIT_RESPONSE : 'init_response' ,
+    NEW_BULLET : 'add_bullet' ,
+    PLAYER_POSITION : 'player_position' ,
+    MESSAGE : 'message' ,
+    CONFIRMATION : 'confirmation' ,
+    BULLET_RESPONSE : 'bullet_response'
+};
+
 var player_img = require('./assets/player_ship.png' );
 var opp_img = require ( './assets/opponent_ship.png' );
 var bullet_img = require ( './assets/bullet.png' );
 var opponent_bullet_img = require ('./assets/opponent_bullet.png' );
 
-var WIDTH , HEIGHT , SOCKET ; 
+var WIDTH , HEIGHT ; 
 const MIN_WIDTH = 0 , MIN_HEIGHT = 0;
 const MODEL_DIMENSIONS = 100 ;
 
@@ -26,7 +36,7 @@ const BULLET_SPEED = 5, BULLET_WIDTH = 10, BULLET_HEIGHT = 30;
 
 
 var canvas , context , player , opp , bulletImage , oppBulletImage ;
-var bulletList = [] ;
+var bulletList = [] , oppBulletList = [] ;
 
 class Bullet {
     constructor ( x , y ){
@@ -56,6 +66,10 @@ function ActivateInputListeners () {
             // space key
             console.log ( "Adding bullet to list at position : " , player.x , " " , player.y-BULLET_SPEED );
             bulletList.push ( new Bullet ( player.x + (player.width / 2) - 5  , player.y-BULLET_SPEED ) );
+            
+            // Raise event when new bullets are added 
+            socket.emit ( SOCKET_EVENTS.NEW_BULLET , { x : player.x + (player.width / 2) - 5 , y : opp.y-BULLET_SPEED+opp.height } );
+
         }
     });
 }
@@ -81,27 +95,33 @@ function main () {
     // EXCHANGING DATA WITH SERVER 
 
     // sending player location 
-    socket.emit ( 'player_position' , player.x );
-    // sending bullet list 
-    if ( bulletList.length > 0 )
-        socket.emit ( 'bullet_location' , bulletList );
+    socket.emit ( SOCKET_EVENTS.PLAYER_POSITION , player.x );
     
-    socket.on ( 'player_position' , (msg) => {
+    socket.on ( SOCKET_EVENTS.PLAYER_POSITION , (msg) => {
         console.log ( 'Received the opponent position from server ' , msg );
         opp.x = msg ;
     });
     
-    var oppBulletList = undefined ; 
-    socket.on ( 'bullet_location' , (msg) => {
-        console.log ( 'Receing bullet positions from server' );
-         oppBulletList = msg ;
+    // UNDER CONSTRUCTION 
+
+    // --------------- NEW CODE FOR BULLETS 
+
+    socket.on ( SOCKET_EVENTS.BULLET_RESPONSE , (msg) => {
+        oppBulletList.push ( new Bullet ( msg.x , msg.y ) );
     });
+
+    // Update bullet values for opponent 
+    for ( var i=0 ; i<oppBulletList.length ; i++ )
+        if ( oppBulletList[i].y <  WIDTH )  oppBulletList[i].y += BULLET_SPEED;
+        else   oppBulletList.splice ( i , 1 );
+
+    // Redraw the bullets of opponent 
+    for ( var i=0 ; i<oppBulletList.length ; i++ ){
+        context.drawImage ( oppBulletImage , oppBulletList[i].x , oppBulletList[i].y , BULLET_WIDTH , BULLET_HEIGHT );
+    }
     
-    // Draw opponent bullets 
-    if ( oppBulletList != undefined )
-        for ( var i=0 ; i<oppBulletList.length ; i++ )
-            context.drawImage ( oppBulletImage , oppBulletList[i].x , oppBulletList[i].y , BULLET_WIDTH , BULLET_HEIGHT );
-        
+    // UNDER CONSTRUCTION           
+    
     // Drawing the opponent's image 
     context.drawImage ( opp.model , opp.x , opp.y , opp.width , opp.height );
 
@@ -150,17 +170,17 @@ function init() {
     ActivateInputListeners();
     
     socket = io ( SERVER );
-    socket.emit ( 'init' , 'Initializing comms' );
-    socket.on ( 'message' , (msg)=> {
+    socket.emit ( SOCKET_EVENTS.INIT , 'Initializing comms' );
+    socket.on ( SOCKET_EVENTS.MESSAGE , (msg)=> {
         // Registering at the server to receive connections
         console.log ( 'Reply from server : ' , msg );
     });
-    socket.on ( 'init_response' , (msg) => {
+    socket.on ( SOCKET_EVENTS.INIT_RESPONSE , (msg) => {
         // Indication from server that opponent has been found
         console.log ( 'Confirmation from server received. Standing By.');
         console.log ( ' ID : ' + msg );
     });
-    socket.on ( 'confirmation' , (msg)=>{
+    socket.on ( SOCKET_EVENTS.CONFIRMATION , (msg)=>{
         console.log ( 'Opponent set up by the server.');
         console.log ( msg );
         console.log ( 'Starting to render the canvas ---- ' );
