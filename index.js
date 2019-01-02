@@ -20,7 +20,7 @@ const SOCKET_EVENTS = {
 };
 
 
-PORT = process.env.PORT || process.argv[2] || 8030 ;
+PORT = process.env.PORT || process.argv[2] || 8080 ;
 
 var server = app.listen ( PORT );
 var io = require('socket.io').listen(server);
