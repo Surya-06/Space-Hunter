@@ -21,9 +21,10 @@ const SOCKET_EVENTS = {
 const MIN_WIDTH = 0 , MIN_HEIGHT = 0, MODEL_DIMENSIONS = 100 , MOVEMENT_PIX = 30;
 const RIGHT_ARROW = 39, LEFT_ARROW = 37, SPACE = 32;
 const BULLET_SPEED = 5, BULLET_WIDTH = 10, BULLET_HEIGHT = 30;
+const OPPONENT_HEALTH_STRING = 'Opponent Health : ' ;
 const SERVER = 'http://localhost:8030';
 
-var WIDTH , HEIGHT , canvas , context , player , opp , bulletImage , oppBulletImage , socket ;
+var WIDTH , HEIGHT , canvas , context , player , opp , bulletImage , oppBulletImage , socket , healthStatsTag ;
 var bulletList = [] , oppBulletList = [] ;
 class Bullet {
     constructor ( x , y ){
@@ -34,10 +35,14 @@ class Bullet {
 
 function EndGame ( player_wins ) {
     socket.emit ( SOCKET_EVENTS.GAMEOVER , '' );
-    if ( player_wins == true )
+    if ( player_wins == true ){
+        socket.disconnect();
         alert ( 'Congratulations ! You win ! ' );
-    else if ( player_wins == false )
+    }
+    else if ( player_wins == false ){
+        socket.disconnect();
         alert ( 'Opponent wins ! Better luck nxt time ! ' );
+    }
     else 
         alert ( 'Sorry connection lost , restarting game. :-( ' );
     location.reload();
@@ -91,6 +96,7 @@ function ActivateSocketListeners () {
         console.log ( 'Opponent set up by the server.');
         console.log ( msg );
         console.log ( 'Starting to render the canvas ---- ' );
+        healthStatsTag.innerHTML = OPPONENT_HEALTH_STRING + opp.health ;    
         requestAnimationFrame ( main );
     });
 
@@ -127,6 +133,7 @@ function main () {
             bulletList[i].y -= BULLET_SPEED;
             if ( bulletList[i].x >= opp.x && bulletList[i].x <=opp.x + opp.width && bulletList[i].y <= opp.y ){
                 console.log ( 'Opp health reduced by 25 : SUCCESSFUL HIT ' );
+                healthStatsTag.innerHTML = OPPONENT_HEALTH_STRING + opp.health ;
                 opp.health -= 25 ;
             }
             if ( opp.health == 0 )
@@ -159,6 +166,7 @@ function AdjustCanvas(canvas){
 
 function init() {
     console.log ( "Starting game " );
+    healthStatsTag = document.getElementById( 'opp_health' );
     canvas = document.getElementById( 'game_frame' );
     AdjustCanvas(canvas);
     context = canvas.getContext('2d');
@@ -190,6 +198,7 @@ function init() {
         height : MODEL_DIMENSIONS ,
         model : oppImage
     };
+    healthStatsTag.innerHTML = 'Welcome to the game. Waiting for players , please see console for more details.' ;    
     // Activate input listeners 
     ActivateInputListeners();
     
