@@ -80,6 +80,14 @@ function main () {
         context.drawImage ( bulletImage , bulletList[i].x , bulletList[i].y , BULLET_WIDTH , BULLET_HEIGHT );
     }
 
+    // EXCHANGING DATA WITH SERVER 
+
+    // sending player location 
+    socket.emit ( 'player_position' , player );
+    // sending bullet list 
+    socket.emit ( 'bullet_location' , bulletList );
+
+
     requestAnimationFrame ( main );
 }
 
@@ -133,7 +141,7 @@ function init() {
         console.log ( 'Confirmation from server received. Standing By.');
         console.log ( ' ID : ' + msg );
     });
-    socket.on ( 'affirmation' , (msg)=>{
+    socket.on ( 'confirmation' , (msg)=>{
         console.log ( 'Opponent set up by the server.');
         console.log ( msg );
         console.log ( 'Starting to render the canvas ---- ' );
