@@ -117,7 +117,6 @@ function main () {
     }
     // Drawing the opponent's image 
     context.drawImage ( opp.model , opp.x , opp.y , opp.width , opp.height );
-
     requestAnimationFrame ( main );
 }
 
