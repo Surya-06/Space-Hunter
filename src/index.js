@@ -22,7 +22,7 @@ const MIN_WIDTH = 0 , MIN_HEIGHT = 0, MODEL_DIMENSIONS = 100 , MOVEMENT_PIX = 30
 const RIGHT_ARROW = 39, LEFT_ARROW = 37, SPACE = 32;
 const BULLET_SPEED = 5, BULLET_WIDTH = 10, BULLET_HEIGHT = 30;
 const OPPONENT_HEALTH_STRING = 'Opponent Health : ' ;
-const SERVER = 'http://localhost:8030';
+const SERVER = 'https://battle-server-98.herokuapp.com/' , DEV_SERVER = 'http://localhost:8030';
 
 var WIDTH , HEIGHT , canvas , context , player , opp , bulletImage , oppBulletImage , socket , healthStatsTag ;
 var bulletList = [] , oppBulletList = [] ;
