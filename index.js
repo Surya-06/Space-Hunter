@@ -5,6 +5,19 @@ var app = express();
 // var http = require('http').Server(app);
 // var io = require('socket.io')(http);
 
+const SOCKET_EVENTS = {
+    INIT : 'init',
+    INIT_RESPONSE : 'init_response' ,
+    NEW_BULLET : 'add_bullet' ,
+    PLAYER_POSITION : 'player_position' ,
+    MESSAGE : 'message' ,
+    CONFIRMATION : 'confirmation', 
+    DISCONNECT : 'disconnect' ,
+    CONNECTION : 'connection' ,
+    BULLET_RESPONSE : 'bullet_response'
+};
+
+
 PORT = process.env.PORT || process.argv[2] || 8030 ;
 
 var server = app.listen ( PORT );
@@ -24,46 +37,45 @@ app.get ( '/' , (req,res)=>{
 
 function start_comms ( socket_a  , socket_b ){
     console.log ( 'Sending confirmation to players');
-    socket_a.emit ( 'confirmation' , 'Connection established with : '+socket_b.id );
-    socket_b.emit ( 'message' , 'Your ID : ' + socket_b.id );
-    socket_b.emit ( 'confirmation' , 'Connection established with : '+socket_a.id );
+    socket_a.emit ( SOCKET_EVENTS.CONFIRMATION , 'Connection established with : '+socket_b.id );
+    socket_b.emit ( SOCKET_EVENTS.MESSAGE , 'Your ID : ' + socket_b.id );
+    socket_b.emit ( SOCKET_EVENTS.CONFIRMATION , 'Connection established with : '+socket_a.id );
 
-    socket_a.on ( 'player_position' , (msg)=>{
+    socket_a.on ( SOCKET_EVENTS.PLAYER_POSITION , (msg)=>{
         // forward player location to other client
         if ( msg != null )
             console.log ( "MSG CLIENT_A : " , msg );
-        socket_b.emit('player_position' , msg );
+        socket_b.emit(SOCKET_EVENTS.PLAYER_POSITION , msg );
     });
-    socket_b.on ( 'player_position' , (msg)=>{
+    socket_b.on ( SOCKET_EVENTS.PLAYER_POSITION , (msg)=>{
         // forward player location to other client
         if ( msg != null ) 
             console.log ( "MSG CLIENT_B: " , msg );
-        socket_a.emit('player_position' , msg );
+        socket_a.emit(SOCKET_EVENTS.PLAYER_POSITION , msg );
     });
 
-    socket_a.on ( 'bullet_location' , (msg)=>{
-        // forward bullet data to other client
-        console.log ( "MSG CLIENT_A : " + msg );
-        socket_b.emit('bullet_location' , msg );
-    });
-    socket_b.on ( 'bullet_location' , (msg)=>{
-        // forward bullet data to other client 
-        console.log ( "MSG CLIENT_B: " + msg );
-        socket_a.emit('bullet_location' , msg );
+    socket_a.on ( SOCKET_EVENTS.NEW_BULLET , (msg) => {
+        console.log ( 'New bullet being sent');
+        socket_b.emit ( SOCKET_EVENTS.BULLET_RESPONSE , msg );
     });
 
-    socket_a.on ( 'disconnect' , (res)=>{
+    socket_b.on ( SOCKET_EVENTS.NEW_BULLET , (msg) => {
+        console.log ( 'New bullet being sent');
+        socket_a.emit ( SOCKET_EVENTS.BULLET_RESPONSE , msg );
+    });
+
+    socket_a.on ( SOCKET_EVENTS.DISCONNECT , (res)=>{
         console.log ( "DISCONNECT : CLIENT_A DISCONNECTED ");
-        socket_b.emit('message' , 'Opponent left , please reload the page :-)');
+        socket_b.emit( SOCKET_EVENTS.MESSAGE , 'Opponent left , please reload the page :-)');
         //socket_b.emit ( 'disconnect' , '' );
         socket_b.disconnect();
         client_obj.delete ( socket_a.id );
         client_obj.delete ( socket_b.id );
         console.log ( 'CLIENT SOCKETS DELETED');
     });
-    socket_b.on ( 'disconnect' , (res)=>{
+    socket_b.on ( SOCKET_EVENTS.DISCONNECT , (res)=>{
         console.log ( "DISCONNECT : CLIENT_B DISCONNECTED ");
-        socket_a.emit('message' , 'Opponent left , please reload the page :-)');
+        socket_a.emit( SOCKET_EVENTS.MESSAGE , 'Opponent left , please reload the page :-)');
         //socket_a.emit ( 'disconnect' , '' );
         socket_a.disconnect();
         client_obj.delete( socket_a.id );
@@ -90,7 +102,7 @@ function make_connection ( socket ){
         
         // HANDLE DISCONNECT EVENTS WHEN NOT MATCHED WITH ANY OTHER PLAYER
         console.log ( 'Registering disconnect handler for lone players ') ;
-        socket.on ( 'disconnect' , (res) => {
+        socket.on ( SOCKET_EVENTS.DISCONNECT , (res) => {
             client_obj.delete ( socket.id );
             not_matched.splice ( not_matched.indexOf(socket.id) , 1 );
             console.log ( "Deleting lone object from list of entries" );
@@ -101,12 +113,12 @@ function make_connection ( socket ){
     return;
 }
 
-io.on('connection' , (socket)=>{
+io.on( SOCKET_EVENTS.CONNECTION , (socket)=>{
     console.log ( "Client connected " , socket.id );
     client_obj.set ( socket.id , socket );
-    socket.on ( 'init' , (msg) => { 
+    socket.on ( SOCKET_EVENTS.INIT , (msg) => { 
         console.log ( "CLIENT : " , msg );
-        socket.emit ( 'init_response' , ' Your ID : ' + socket.id );
+        socket.emit ( SOCKET_EVENTS.INIT_RESPONSE , ' Your ID : ' + socket.id );
         make_connection ( socket );
     });
 });
