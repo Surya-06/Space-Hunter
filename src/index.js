@@ -96,7 +96,7 @@ function ActivateSocketListeners () {
         console.log ( 'Opponent set up by the server.');
         console.log ( msg );
         console.log ( 'Starting to render the canvas ---- ' );
-        healthStatsTag.innerHTML = OPPONENT_HEALTH_STRING + opp.health ;    
+        healthStatsTag.value = OPPONENT_HEALTH_STRING + opp.health ;    
         requestAnimationFrame ( main );
     });
 
@@ -133,7 +133,7 @@ function main () {
             bulletList[i].y -= BULLET_SPEED;
             if ( bulletList[i].x >= opp.x && bulletList[i].x <=opp.x + opp.width && bulletList[i].y <= opp.y ){
                 console.log ( 'Opp health reduced by 25 : SUCCESSFUL HIT ' );
-                healthStatsTag.innerHTML = OPPONENT_HEALTH_STRING + opp.health ;
+                healthStatsTag.value = OPPONENT_HEALTH_STRING + opp.health ;
                 opp.health -= 25 ;
             }
             if ( opp.health == 0 )
@@ -197,8 +197,7 @@ function init() {
         width : MODEL_DIMENSIONS ,
         height : MODEL_DIMENSIONS ,
         model : oppImage
-    };
-    healthStatsTag.innerHTML = 'Welcome to the game. Waiting for players , please see console for more details.' ;    
+    };    
     // Activate input listeners 
     ActivateInputListeners();
     
