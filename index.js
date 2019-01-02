@@ -30,12 +30,14 @@ function start_comms ( socket_a  , socket_b ){
 
     socket_a.on ( 'player_position' , (msg)=>{
         // forward player location to other client
-        console.log ( "MSG CLIENT_A : " + msg );
+        if ( msg != null )
+            console.log ( "MSG CLIENT_A : " , msg );
         socket_b.emit('player_position' , msg );
     });
     socket_b.on ( 'player_position' , (msg)=>{
-        // forward player location to other client 
-        console.log ( "MSG CLIENT_B: " + msg );
+        // forward player location to other client
+        if ( msg != null ) 
+            console.log ( "MSG CLIENT_B: " , msg );
         socket_a.emit('player_position' , msg );
     });
 
@@ -53,7 +55,7 @@ function start_comms ( socket_a  , socket_b ){
     socket_a.on ( 'disconnect' , (res)=>{
         console.log ( "DISCONNECT : CLIENT_A DISCONNECTED ");
         socket_b.emit('message' , 'Opponent left , please reload the page :-)');
-        socket_b.emit ( 'disconnect' , '' );
+        //socket_b.emit ( 'disconnect' , '' );
         socket_b.disconnect();
         client_obj.delete ( socket_a.id );
         client_obj.delete ( socket_b.id );
@@ -62,7 +64,7 @@ function start_comms ( socket_a  , socket_b ){
     socket_b.on ( 'disconnect' , (res)=>{
         console.log ( "DISCONNECT : CLIENT_B DISCONNECTED ");
         socket_a.emit('message' , 'Opponent left , please reload the page :-)');
-        socket_a.emit ( 'disconnect' , '' );
+        //socket_a.emit ( 'disconnect' , '' );
         socket_a.disconnect();
         client_obj.delete( socket_a.id );
         client_obj.delete( socket_b.id );
@@ -84,6 +86,8 @@ function make_connection ( socket ){
         console.log ( 'No players available , client added to wait list ');
         not_matched.push(socket.id);
         socket.emit('message' , 'No player yet waiting for connection');
+        
+        
         // HANDLE DISCONNECT EVENTS WHEN NOT MATCHED WITH ANY OTHER PLAYER
         console.log ( 'Registering disconnect handler for lone players ') ;
         socket.on ( 'disconnect' , (res) => {
@@ -91,6 +95,8 @@ function make_connection ( socket ){
             not_matched.splice ( not_matched.indexOf(socket.id) , 1 );
             console.log ( "Deleting lone object from list of entries" );
         });
+
+        
     }
     return;
 }
