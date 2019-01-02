@@ -1,0 +1,40 @@
+html,body{
+    width : 100%;
+    height: 100%;
+    margin : 0px;
+    padding : 0px;
+    overflow: hidden;
+}
+body{
+    background: url('./background.png');
+    background-size : 800px 700px ;
+    background-repeat: repeat;
+}
+
+.wrapper{
+    width : 100%;
+    height : 100%;
+    clear : both ;
+}
+.stats{
+    height : 100%;
+    width : 25%;
+    float : left ;
+}
+.game_frame{
+    height: 100%;
+    width : 75%;
+    float : right;
+}
+.current_stats{
+    height : 96%;
+    width : 95%;
+    border : 5px solid green;
+    padding-top : 4%;
+    background : gray;
+    opacity: 0.8;
+}
+
+canvas{
+    box-shadow: -5px 0px 0px 0px black;
+}
