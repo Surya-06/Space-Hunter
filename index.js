@@ -133,4 +133,5 @@ io.on( SOCKET_EVENTS.CONNECTION , (socket)=>{
     });
 });
 
-console.log ( ' LOG : Server initialized ')
+console.log ( ' LOG : Server initialized ' );
+console.log ( 'Server for players started :-) ' );
