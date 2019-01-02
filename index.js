@@ -14,7 +14,9 @@ const SOCKET_EVENTS = {
     CONFIRMATION : 'confirmation', 
     DISCONNECT : 'disconnect' ,
     CONNECTION : 'connection' ,
-    BULLET_RESPONSE : 'bullet_response'
+    BULLET_RESPONSE : 'bullet_response' ,
+    GAMEOVER : 'game_over' ,
+    FORCE_DISCONNECT : 'force_disconnect'
 };
 
 
@@ -47,6 +49,7 @@ function start_comms ( socket_a  , socket_b ){
             console.log ( "MSG CLIENT_A : " , msg );
         socket_b.emit(SOCKET_EVENTS.PLAYER_POSITION , msg );
     });
+
     socket_b.on ( SOCKET_EVENTS.PLAYER_POSITION , (msg)=>{
         // forward player location to other client
         if ( msg != null ) 
@@ -64,19 +67,26 @@ function start_comms ( socket_a  , socket_b ){
         socket_a.emit ( SOCKET_EVENTS.BULLET_RESPONSE , msg );
     });
 
+    socket_a.on ( SOCKET_EVENTS.GAMEOVER , (msg) => {
+        socket_b.emit ( SOCKET_EVENTS.GAMEOVER , '' );
+    });
+
+    socket_b.on ( SOCKET_EVENTS.GAMEOVER , (msg) => {
+        socket_a.emit ( SOCKET_EVENTS.GAMEOVER , '' );
+    });
+
     socket_a.on ( SOCKET_EVENTS.DISCONNECT , (res)=>{
         console.log ( "DISCONNECT : CLIENT_A DISCONNECTED ");
-        socket_b.emit( SOCKET_EVENTS.MESSAGE , 'Opponent left , please reload the page :-)');
-        //socket_b.emit ( 'disconnect' , '' );
+        socket_b.emit ( SOCKET_EVENTS.FORCE_DISCONNECT , '' );
         socket_b.disconnect();
         client_obj.delete ( socket_a.id );
         client_obj.delete ( socket_b.id );
         console.log ( 'CLIENT SOCKETS DELETED');
     });
+    
     socket_b.on ( SOCKET_EVENTS.DISCONNECT , (res)=>{
         console.log ( "DISCONNECT : CLIENT_B DISCONNECTED ");
-        socket_a.emit( SOCKET_EVENTS.MESSAGE , 'Opponent left , please reload the page :-)');
-        //socket_a.emit ( 'disconnect' , '' );
+        socket_a.emit ( SOCKET_EVENTS.FORCE_DISCONNECT , '' );
         socket_a.disconnect();
         client_obj.delete( socket_a.id );
         client_obj.delete( socket_b.id );
@@ -122,7 +132,5 @@ io.on( SOCKET_EVENTS.CONNECTION , (socket)=>{
         make_connection ( socket );
     });
 });
-
-// http.listen( PORT, ()=> {console.log("Server up at : " , PORT );});
 
 console.log ( ' LOG : Server initialized ')
