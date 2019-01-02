@@ -13,7 +13,9 @@ const SOCKET_EVENTS = {
     PLAYER_POSITION : 'player_position' ,
     MESSAGE : 'message' ,
     CONFIRMATION : 'confirmation' ,
-    BULLET_RESPONSE : 'bullet_response'
+    BULLET_RESPONSE : 'bullet_response' ,
+    GAMEOVER : 'game_over' ,
+    FORCE_DISCONNECT : 'force_disconnect'
 };
 
 const MIN_WIDTH = 0 , MIN_HEIGHT = 0, MODEL_DIMENSIONS = 100 , MOVEMENT_PIX = 30;
@@ -29,6 +31,17 @@ class Bullet {
         this.y = y ;
     }
 };
+
+function EndGame ( player_wins ) {
+    socket.emit ( SOCKET_EVENTS.GAMEOVER , '' );
+    if ( player_wins == true )
+        alert ( 'Congratulations ! You win ! ' );
+    else if ( player_wins == false )
+        alert ( 'Opponent wins ! Better luck nxt time ! ' );
+    else 
+        alert ( 'Sorry connection lost , restarting game. :-( ' );
+    location.reload();
+}
 
 function ActivateInputListeners () {    
     document.addEventListener ( 'keydown' , (event) => {
@@ -91,6 +104,16 @@ function ActivateSocketListeners () {
     socket.on ( SOCKET_EVENTS.BULLET_RESPONSE , (msg) => {
         oppBulletList.push ( new Bullet ( msg.x , msg.y ) );
     });
+
+    // Listener to see if game is complete 
+    socket.on ( SOCKET_EVENTS.GAMEOVER , (msg) => {
+        EndGame ( false );
+    });
+
+    // Listener to handle disconnection from opponent 
+    socket.on ( SOCKET_EVENTS.FORCE_DISCONNECT , (msg) => {
+        EndGame(null);
+    });
 }
 
 function main () {
@@ -102,6 +125,12 @@ function main () {
     for ( var i=0 ; i<bulletList.length ; i++ )
         if ( bulletList[i].y > 0 )  {
             bulletList[i].y -= BULLET_SPEED;
+            if ( bulletList[i].x >= opp.x && bulletList[i].x <=opp.x + opp.width && bulletList[i].y <= opp.y ){
+                console.log ( 'Opp health reduced by 25 : SUCCESSFUL HIT ' );
+                opp.health -= 25 ;
+            }
+            if ( opp.health == 0 )
+                EndGame(true) ;
             context.drawImage ( bulletImage , bulletList[i].x , bulletList[i].y , BULLET_WIDTH , BULLET_HEIGHT );
         }
         else   bulletList.splice ( i , 1 );
@@ -109,7 +138,7 @@ function main () {
     socket.emit ( SOCKET_EVENTS.PLAYER_POSITION , player.x );   
     // Update bullet values for opponent 
     for ( var i=0 ; i<oppBulletList.length ; i++ ){
-        if ( oppBulletList[i].y <  WIDTH ){
+        if ( oppBulletList[i].y <  HEIGHT ){
             oppBulletList[i].y += BULLET_SPEED;
             context.drawImage ( oppBulletImage , oppBulletList[i].x , oppBulletList[i].y , BULLET_WIDTH , BULLET_HEIGHT );
         }
@@ -148,6 +177,7 @@ function init() {
     player = {
         x : WIDTH/2 ,
         y : HEIGHT - MODEL_DIMENSIONS ,
+        health : 100 ,
         width : MODEL_DIMENSIONS , 
         height : MODEL_DIMENSIONS ,
         model : playerImage 
@@ -155,6 +185,7 @@ function init() {
     opp = {
         x : WIDTH/2 ,
         y : MIN_HEIGHT ,
+        health : 100 ,
         width : MODEL_DIMENSIONS ,
         height : MODEL_DIMENSIONS ,
         model : oppImage
