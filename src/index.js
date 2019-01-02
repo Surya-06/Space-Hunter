@@ -14,6 +14,7 @@ var socket ;
 var player_img = require('./assets/player_ship.png' );
 var opp_img = require ( './assets/opponent_ship.png' );
 var bullet_img = require ( './assets/bullet.png' );
+var opponent_bullet_img = require ('./assets/opponent_bullet.png' );
 
 var WIDTH , HEIGHT , SOCKET ; 
 const MIN_WIDTH = 0 , MIN_HEIGHT = 0;
@@ -24,7 +25,7 @@ const RIGHT_ARROW = 39, LEFT_ARROW = 37, SPACE = 32;
 const BULLET_SPEED = 5, BULLET_WIDTH = 10, BULLET_HEIGHT = 30;
 
 
-var canvas , context , player , opp , bulletImage ;
+var canvas , context , player , opp , bulletImage , oppBulletImage ;
 var bulletList = [] ;
 
 class Bullet {
@@ -67,9 +68,6 @@ function main () {
     // Drawing the player's image 
     context.drawImage ( player.model , player.x , player.y, player.width , player.height );
 
-    // Drawing the opponent's image 
-    context.drawImage ( opp.model , opp.x , opp.y , opp.width , opp.height );
-
     // Update bullet values 
     for ( var i=0 ; i<bulletList.length ; i++ )
         if ( bulletList[i].y > 0 )  bulletList[i].y -= BULLET_SPEED;
@@ -83,10 +81,22 @@ function main () {
     // EXCHANGING DATA WITH SERVER 
 
     // sending player location 
-    socket.emit ( 'player_position' , player );
+    socket.emit ( 'player_position' , player.x );
     // sending bullet list 
     socket.emit ( 'bullet_location' , bulletList );
-
+    
+    socket.on ( 'player_position' , (msg) => {
+        console.log ( 'Received the opponent position from server ' , msg );
+        opp.x = msg ;
+    });
+    /* WORKING ON BULLETS 
+    socket.on ( 'bullet_location' , (msg) => {
+        console.log ( 'Receing bullet positions from server' );
+         
+    });
+    */
+    // Drawing the opponent's image 
+    context.drawImage ( opp.model , opp.x , opp.y , opp.width , opp.height );
 
     requestAnimationFrame ( main );
 }
@@ -110,9 +120,11 @@ function init() {
     var playerImage = new Image();
     var oppImage = new Image();
     bulletImage = new Image();
+    oppBulletImage = new Image();
     playerImage.src = player_img;
     oppImage.src = opp_img;
     bulletImage.src = bullet_img;
+    oppBulletImage.src = opponent_bullet_img ;
     player = {
         x : WIDTH/2 ,
         y : HEIGHT - MODEL_DIMENSIONS ,
