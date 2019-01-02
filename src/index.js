@@ -1,15 +1,10 @@
 // TODO : delete fabric from modules 
-
-/*  USING REQUIRE IMPORTS FOR IMAGES AS WELL 
-import player_img from './assets/player_ship.png';
-import opp_img from './assets/opponent_ship.png';
-import bullet_img from './assets/bullet.png';
-*/
-
 // IMPORTS AND CONSTANTS FOR NETWORK ACCESS
 var io = require('socket.io-client');
-const SERVER = 'http://localhost:8030';
-var socket ;
+var player_img = require('./assets/player_ship.png' );
+var opp_img = require ( './assets/opponent_ship.png' );
+var bullet_img = require ( './assets/bullet.png' );
+var opponent_bullet_img = require ('./assets/opponent_bullet.png' );
 
 const SOCKET_EVENTS = {
     INIT : 'init',
@@ -21,23 +16,13 @@ const SOCKET_EVENTS = {
     BULLET_RESPONSE : 'bullet_response'
 };
 
-var player_img = require('./assets/player_ship.png' );
-var opp_img = require ( './assets/opponent_ship.png' );
-var bullet_img = require ( './assets/bullet.png' );
-var opponent_bullet_img = require ('./assets/opponent_bullet.png' );
-
-var WIDTH , HEIGHT ; 
-const MIN_WIDTH = 0 , MIN_HEIGHT = 0;
-const MODEL_DIMENSIONS = 100 ;
-
-const MOVEMENT_PIX = 30;
+const MIN_WIDTH = 0 , MIN_HEIGHT = 0, MODEL_DIMENSIONS = 100 , MOVEMENT_PIX = 30;
 const RIGHT_ARROW = 39, LEFT_ARROW = 37, SPACE = 32;
 const BULLET_SPEED = 5, BULLET_WIDTH = 10, BULLET_HEIGHT = 30;
+const SERVER = 'http://localhost:8030';
 
-
-var canvas , context , player , opp , bulletImage , oppBulletImage ;
+var WIDTH , HEIGHT , canvas , context , player , opp , bulletImage , oppBulletImage , socket ;
 var bulletList = [] , oppBulletList = [] ;
-
 class Bullet {
     constructor ( x , y ){
         this.x = x ;
@@ -74,54 +59,62 @@ function ActivateInputListeners () {
     });
 }
 
-function main () {
+function ActivateSocketListeners () {
+    // Listener for messages from server 
+    socket.on ( SOCKET_EVENTS.MESSAGE , (msg)=> {
+        // Registering at the server to receive connections
+        console.log ( 'Reply from server : ' , msg );
+    });
 
-    // Main loop for printing all the game components
-    context.clearRect ( 0,0, WIDTH , HEIGHT );
+    // Listener for init response from server 
+    socket.on ( SOCKET_EVENTS.INIT_RESPONSE , (msg) => {
+        // Indication from server that opponent has been found
+        console.log ( 'Confirmation from server received. Standing By.');
+        console.log ( ' ID : ' + msg );
+    });
 
-    // Drawing the player's image 
-    context.drawImage ( player.model , player.x , player.y, player.width , player.height );
+    // Listener to confirm connection and start rendering 
+    socket.on ( SOCKET_EVENTS.CONFIRMATION , (msg)=>{
+        console.log ( 'Opponent set up by the server.');
+        console.log ( msg );
+        console.log ( 'Starting to render the canvas ---- ' );
+        requestAnimationFrame ( main );
+    });
 
-    // Update bullet values 
-    for ( var i=0 ; i<bulletList.length ; i++ )
-        if ( bulletList[i].y > 0 )  bulletList[i].y -= BULLET_SPEED;
-        else   bulletList.splice ( i , 1 );
-
-    // Redraw the bullets 
-    for ( var i=0 ; i<bulletList.length ; i++ ){
-        context.drawImage ( bulletImage , bulletList[i].x , bulletList[i].y , BULLET_WIDTH , BULLET_HEIGHT );
-    }
-
-    // EXCHANGING DATA WITH SERVER 
-
-    // sending player location 
-    socket.emit ( SOCKET_EVENTS.PLAYER_POSITION , player.x );
-    
+    // Listener for updating position of opponent 
     socket.on ( SOCKET_EVENTS.PLAYER_POSITION , (msg) => {
         console.log ( 'Received the opponent position from server ' , msg );
         opp.x = msg ;
     });
-    
-    // UNDER CONSTRUCTION 
 
-    // --------------- NEW CODE FOR BULLETS 
-
+    // Listener to indicate bullet firing from opponent 
     socket.on ( SOCKET_EVENTS.BULLET_RESPONSE , (msg) => {
         oppBulletList.push ( new Bullet ( msg.x , msg.y ) );
     });
+}
 
+function main () {
+    // Main loop for rendering all the game components
+    context.clearRect ( 0,0, WIDTH , HEIGHT );
+    // Drawing the player's image 
+    context.drawImage ( player.model , player.x , player.y, player.width , player.height );
+    // Update bullet values 
+    for ( var i=0 ; i<bulletList.length ; i++ )
+        if ( bulletList[i].y > 0 )  {
+            bulletList[i].y -= BULLET_SPEED;
+            context.drawImage ( bulletImage , bulletList[i].x , bulletList[i].y , BULLET_WIDTH , BULLET_HEIGHT );
+        }
+        else   bulletList.splice ( i , 1 );
+    // sending player location 
+    socket.emit ( SOCKET_EVENTS.PLAYER_POSITION , player.x );   
     // Update bullet values for opponent 
-    for ( var i=0 ; i<oppBulletList.length ; i++ )
-        if ( oppBulletList[i].y <  WIDTH )  oppBulletList[i].y += BULLET_SPEED;
-        else   oppBulletList.splice ( i , 1 );
-
-    // Redraw the bullets of opponent 
     for ( var i=0 ; i<oppBulletList.length ; i++ ){
-        context.drawImage ( oppBulletImage , oppBulletList[i].x , oppBulletList[i].y , BULLET_WIDTH , BULLET_HEIGHT );
+        if ( oppBulletList[i].y <  WIDTH ){
+            oppBulletList[i].y += BULLET_SPEED;
+            context.drawImage ( oppBulletImage , oppBulletList[i].x , oppBulletList[i].y , BULLET_WIDTH , BULLET_HEIGHT );
+        }
+        else   oppBulletList.splice ( i , 1 );
     }
-    
-    // UNDER CONSTRUCTION           
-    
     // Drawing the opponent's image 
     context.drawImage ( opp.model , opp.x , opp.y , opp.width , opp.height );
 
@@ -129,6 +122,7 @@ function main () {
 }
 
 function AdjustCanvas(canvas){
+    // Dynamically adjust canvas to width and height of the screen 
     canvas.style.width='100%';
     canvas.style.height='100%';
     canvas.width  = canvas.offsetWidth;
@@ -171,22 +165,9 @@ function init() {
     
     socket = io ( SERVER );
     socket.emit ( SOCKET_EVENTS.INIT , 'Initializing comms' );
-    socket.on ( SOCKET_EVENTS.MESSAGE , (msg)=> {
-        // Registering at the server to receive connections
-        console.log ( 'Reply from server : ' , msg );
-    });
-    socket.on ( SOCKET_EVENTS.INIT_RESPONSE , (msg) => {
-        // Indication from server that opponent has been found
-        console.log ( 'Confirmation from server received. Standing By.');
-        console.log ( ' ID : ' + msg );
-    });
-    socket.on ( SOCKET_EVENTS.CONFIRMATION , (msg)=>{
-        console.log ( 'Opponent set up by the server.');
-        console.log ( msg );
-        console.log ( 'Starting to render the canvas ---- ' );
-        requestAnimationFrame ( main );
-    });
-    //requestAnimationFrame ( main );
+
+    // Activate socket for listening to events 
+    ActivateSocketListeners() ;
 }
 
 init();
