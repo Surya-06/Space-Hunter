@@ -83,18 +83,25 @@ function main () {
     // sending player location 
     socket.emit ( 'player_position' , player.x );
     // sending bullet list 
-    socket.emit ( 'bullet_location' , bulletList );
+    if ( bulletList.length > 0 )
+        socket.emit ( 'bullet_location' , bulletList );
     
     socket.on ( 'player_position' , (msg) => {
         console.log ( 'Received the opponent position from server ' , msg );
         opp.x = msg ;
     });
-    /* WORKING ON BULLETS 
+    
+    var oppBulletList = undefined ; 
     socket.on ( 'bullet_location' , (msg) => {
         console.log ( 'Receing bullet positions from server' );
-         
+         oppBulletList = msg ;
     });
-    */
+    
+    // Draw opponent bullets 
+    if ( oppBulletList != undefined )
+        for ( var i=0 ; i<oppBulletList.length ; i++ )
+            context.drawImage ( oppBulletImage , oppBulletList[i].x , oppBulletList[i].y , BULLET_WIDTH , BULLET_HEIGHT );
+        
     // Drawing the opponent's image 
     context.drawImage ( opp.model , opp.x , opp.y , opp.width , opp.height );
 
