@@ -17,6 +17,7 @@
     "webworker-loader": "^0.1.0"
   },
   "dependencies": {
-    "fabric": "^2.4.5"
+    "fabric": "^2.4.5",
+    "socket.io-client": "^2.2.0"
   }
 }

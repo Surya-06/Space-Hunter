@@ -1,10 +1,21 @@
 // TODO : delete fabric from modules 
 
+/*  USING REQUIRE IMPORTS FOR IMAGES AS WELL 
 import player_img from './assets/player_ship.png';
 import opp_img from './assets/opponent_ship.png';
 import bullet_img from './assets/bullet.png';
+*/
 
-var WIDTH , HEIGHT ; 
+// IMPORTS AND CONSTANTS FOR NETWORK ACCESS
+var io = require('socket.io-client');
+const SERVER = 'http://localhost:8030';
+var socket ;
+
+var player_img = require('./assets/player_ship.png' );
+var opp_img = require ( './assets/opponent_ship.png' );
+var bullet_img = require ( './assets/bullet.png' );
+
+var WIDTH , HEIGHT , SOCKET ; 
 const MIN_WIDTH = 0 , MIN_HEIGHT = 0;
 const MODEL_DIMENSIONS = 100 ;
 
@@ -110,8 +121,25 @@ function init() {
     };
     // Activate input listeners 
     ActivateInputListeners();
-
-    requestAnimationFrame ( main );
+    
+    socket = io ( SERVER );
+    socket.emit ( 'init' , 'Initializing comms' );
+    socket.on ( 'message' , (msg)=> {
+        // Registering at the server to receive connections
+        console.log ( 'Reply from server : ' , msg );
+    });
+    socket.on ( 'init_response' , (msg) => {
+        // Indication from server that opponent has been found
+        console.log ( 'Confirmation from server received. Standing By.');
+        console.log ( ' ID : ' + msg );
+    });
+    socket.on ( 'affirmation' , (msg)=>{
+        console.log ( 'Opponent set up by the server.');
+        console.log ( msg );
+        console.log ( 'Starting to render the canvas ---- ' );
+        requestAnimationFrame ( main );
+    });
+    //requestAnimationFrame ( main );
 }
 
 init();
